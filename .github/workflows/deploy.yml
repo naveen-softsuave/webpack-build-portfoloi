@@ -48,7 +48,7 @@ jobs:
 
       # 5. Package the built files for GitHub pakages
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2 # Pre-built action to prepare files for deployment
+        uses: actions/upload-pages-artifact@v3 # Pre-built action to prepare files for deployment
         with:
           path: './build' # Tells the action where your built files are located
 

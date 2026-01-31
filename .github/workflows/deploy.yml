@@ -12,54 +12,59 @@ on:
 # Permissions needed for the workflow to interact with Github pages
 permissions:
   contents: read # Allows the workflow to read your repository code
-  pages: write # Allow the workflow to delpoy to github pages
+  pages: write # Allow the workflow to deploy to github pages
   id-token: write # Needed for secure authentication with GitHub Pages
 
-# A workflow contains one or more "jobs" that run in parallel or sequece
-jobs:
-  # This is our single job named "build-and-deploy"
-  build-and-deploy:
-    runs-on: ubuntu-latest # The job runs on an Ubuntu Linux virtual machine (GitHub provides this for free)
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
-    # Environment configuration for GitHub Pages
+jobs:
+  # Job 1: Build the application
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Download your repo code to the virtual machine
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Install Node.js on the VM
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      # 3. Install all project dependencies from package.json
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. Build the project
+      - name: Build webpack application
+        run: npm run build
+
+      # 5. Setup GitHub Pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      # 6. Package the built files for GitHub Pages
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './build'
+
+  # Job 2: Deploy to GitHub Pages (runs after build completes)
+  deploy:
+    needs: build # Wait for build job to complete
+    runs-on: ubuntu-latest
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
-    # Steps are the individual tasks that run sequentially in this job
     steps:
-      # 1. Download your repo code to the virtual machine
-      - name: Checkout code
-        uses: actions/checkout@v4 # This is a pre-built action from GitHub that clones your repo
-
-      # 2. Install Node.js on the VM
-      - name: Setup Node.js
-        uses: actions/setup-node@v4 # Pre-built action to install Node.js
-        with:
-          node-version: '18' # Specifies which version of Node.js to install (change if needed)
-          cache: 'npm' # Caches npm dependencies to speed up future builds
-        # This means dependencies won't be re-downloaded if package.json hasn't changed
-      
-      # 3. Install all project dependencies from package.json
-      - name: Install dependencies
-        run: npm ci # 'npm ci' is faster and more reliable than 'npm install' for CI/CD
-      # It uses package-lock.json to ensure exact versions are installed
-      # Use 'npm install' if you don't have a package-lock.json file
-
-      # 4. Build the project
-      - name: Build webpack application
-        run: npm run build # Executes the "build" script from your package.json
-      # This runs webpack and creates production-ready files in your dist folder
-
-      # 5. Package the built files for GitHub pakages
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3 # Pre-built action to prepare files for deployment
-        with:
-          path: './build' # Tells the action where your built files are located
-
-      # 6. deploy the packaged files to Github Pages
       - name: Deploy to GitHub Pages
-        id: deployment # Gives this step an ID so other steps can reference it if needed
-        uses: actions/deploy-pages@v3 # Pre-built action that actually publishes to GitHub Pages
-    # This takes the artifact from the previous step and makes it live on the internet
-
+        id: deployment
+        uses: actions/deploy-pages@v4

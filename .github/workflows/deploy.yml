@@ -2,23 +2,23 @@
 name: Deploy to Github Pages
 
 # This defines WHEN the workflow should run
-on: 
+on:
   push:
     branches: [main] # Triggers automatically when you push the code to the 'main' branch
 
   workflow_dispatch: # This allows you to manually trigger the deployment from github action tab
   #Useful when you want to redeploy without making a new commit
 
-  # Permissions needed for the workflow to interact with Github pages
-  permissions:
-    contents: read # Allows the workflow to read your repository code
-    pages: write # Allow the workflow to delpoy to github pages
-    id-token: write # Needed for secure authentication with GitHub Pages
+# Permissions needed for the workflow to interact with Github pages
+permissions:
+  contents: read # Allows the workflow to read your repository code
+  pages: write # Allow the workflow to delpoy to github pages
+  id-token: write # Needed for secure authentication with GitHub Pages
 
-  # A workflow contains one or more "jobs" that run in parallel or sequece 
-  jobs:
-    # This is our single job named "build-and-deploy"
-    build-and-deploy:
+# A workflow contains one or more "jobs" that run in parallel or sequece
+jobs:
+  # This is our single job named "build-and-deploy"
+  build-and-deploy:
     runs-on: ubuntu-latest # The job runs on an Ubuntu Linux virtual machine (GitHub provides this for free)
 
     # Steps are the individual tasks that run sequentially in this job
